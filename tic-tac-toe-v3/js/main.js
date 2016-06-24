@@ -1,5 +1,5 @@
 //use module pattern to wrap the javascript into one function.
-!function () {
+(function () {
 
 
 //use strict
@@ -12,6 +12,7 @@ var Player1Wins;
 var Player2Wins;
 var BoxesCount;
 var StartGame;
+var GetNewGame;
 
 // When the page loads, the startup screen should appear. Use the tictactoe-01-start.png mockup, 
 window.addEventListener('load', function() {
@@ -25,8 +26,9 @@ window.addEventListener('load', function() {
 	StartGame.addEventListener('click', function(){
 		NewGame();
 	});
+});
 
-	//New Game Function
+	//New Game Function to create the board, count the boxes and keep track of which player's turn it is.
 	var NewGame = function() {
 			//Set boxes count to = 0
 			BoxesCount = 0;
@@ -38,34 +40,37 @@ window.addEventListener('load', function() {
 			$("#player2").removeClass("active");
 			//HTML Collection of boxes
 			Boxes = document.getElementsByClassName("box");
-
-			//iterate through our box html collection for hover changes and choosing a box.
-			for(var i = 0; i < Boxes.length; i++) {
-					Boxes[i].addEventListener('mouseover', function() {
-						//If the box already has a selection, stop the function to prevent the other symbol from showing up on hover state.
+		
+			//Create a BoxMouseOver function to show the X or O depending on what player's turn it is
+			function BoxMouseOver() {
+				return function(){
+					//If the box already has a selection, stop the function to prevent the other symbol from showing up on hover state.
 						if ($(this).hasClass("box-filled-1") || $(this).hasClass("box-filled-2")) {
 							return;
 						} 
 						//If player 1 has class active on hover show an O in the box, otherwise show an X.
 						if ($("#player1").hasClass("active")) {
 						this.style.backgroundImage = "url('../tic-tac-toe-v3/img/o.svg')";
-					} else {
+						} else {
 						this.style.backgroundImage = "url('../tic-tac-toe-v3/img/x.svg')";
 					}
-				});
+				}
+			}
 
-					//When you mouseout, the background goes back to empty in each box
-					Boxes[i].addEventListener('mouseout', function() {
+			//Create a BoxMouseOut function to return the box to a blank background upon mouse exit.
+			function BoxMouseOut(){
+				return function(){
 						this.style.backgroundImage = "";
-
-					});
-
-					//Event listener for when a box is clicked to fill boxes and check win conditions.
-					Boxes[i].addEventListener('click', function() {
+					}
+				}
+		
+			//Function for box win condition checks
+			function BoxWinConditions(){
+				return function(){
 						BoxesCount ++;
 						Player1Wins = false;
 						Player2Wins = false;
-
+						GetNewGame = document.getElementById("NewGameButton");
 						//If this box already has a selection stop the function from running (disables someone from clicking the same box again)
 						if ($(this).hasClass("box-filled-1") || $(this).hasClass("box-filled-2")) {
 							return;
@@ -116,6 +121,10 @@ window.addEventListener('load', function() {
 						//Change mainboard to display player 1 winning
 							Mainboard.innerHTML = '<div class="screen screen-win screen-win-one" id="finish"><header><h1>Tic Tac Toe</h1><p class="message">Winner!</p><a href="#" class="button" id="NewGameButton">New game</a></header></div>';
 									Player1Wins = true;
+							GetNewGame = document.getElementById("NewGameButton");
+							GetNewGame.addEventListener("click", function(){
+							NewGame();
+					});
 
 						} else if (x0 && x1 && x2
 							|| x3 && x4 && x5
@@ -125,30 +134,43 @@ window.addEventListener('load', function() {
 							|| x2 && x5 && x8
 							|| x0 && x4 && x8
 							|| x2 && x4 && x6) {
-								//Change mainboard to display player 2 winning
+						//Change mainboard to display player 2 winning
 							Mainboard.innerHTML = '<div class="screen screen-win screen-win-two" id="finish"><header><h1>Tic Tac Toe</h1><p class="message">Winner!</p><a href="#" class="button" id="NewGameButton">New game</a></header></div>';
 									Player2Wins = true;
+							GetNewGame = document.getElementById("NewGameButton");
+							GetNewGame.addEventListener("click", function(){
+							NewGame();
+					});
 						}
 
 						//If no player has won, and the total amount of boxes clicked is 9 the game is a tie!
 						if(!Player1Wins && !Player2Wins && BoxesCount === 9) {
 							Mainboard.innerHTML = '<div class="screen screen-win screen-win-tie" id="finish"><header><h1>Tic Tac Toe</h1><p class="message">Dang, It\'s a Tie!</p><a href="#" class="button" id="NewGameButton">New game</a></header></div>';
+							GetNewGame = document.getElementById("NewGameButton");
+							GetNewGame.addEventListener("click", function(){
+							NewGame();
+					});
 						}
 
-					//Start a new game when the New Game button is clicked by calling our NewGame function
-					var GetNewGame = document.getElementById("NewGameButton");
-					GetNewGame.addEventListener("click", function(){
-						NewGame();
-					});
-			
-			});
-		}
-				
-	}
 
-});
-	
-}();
+					
+				
+				}
+
+			}
+
+			//iterate through our box html collection for hover changes and choosing a box.
+			for(var i = 0; i < Boxes.length; i++) {
+					Boxes[i].addEventListener('mouseover', BoxMouseOver());
+
+					//When you mouseout, the background goes back to empty in each box
+					Boxes[i].addEventListener('mouseout', BoxMouseOut());
+					
+					//Event listener for when a box is clicked to fill boxes and check win conditions.
+					Boxes[i].addEventListener('click', BoxWinConditions());
+			}
+		}
+})()
 
 
 
